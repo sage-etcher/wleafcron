@@ -9,7 +9,6 @@
 #include "imath.h"
 
 
-static size_t string_get_size (size_t required);
 
 #ifndef strdup
 char *
@@ -34,7 +33,7 @@ strdup (const char *src)
 }
 #endif
 
-static size_t
+size_t
 string_get_size (size_t required)
 {
     return (size_t)1 << log2sz (required);

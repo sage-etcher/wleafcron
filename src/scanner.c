@@ -9,8 +9,6 @@
 #include "morestrings.h"
 #include "symbols.h"
 
-#define SYMBOLS1(x)    (symbols_t){ .cnt = 1, .m = { x }    }
-#define SYMBOLS2(x, y) (symbols_t){ .cnt = 2, .m = { x, y } }
 
 static void
 readch (scanner_t *self)
@@ -168,6 +166,7 @@ scan_maybe_string_generic (scanner_t *self)
 
     if (self->string.count == 1)
     {
+        self->number = -1;
         return SYMBOLS2 (SYM_GENERIC, SYM_STRING);
     }
 
@@ -182,6 +181,9 @@ scanner_scan (scanner_t *self)
     {
         readch (self);
     }
+
+    self->last_line = self->line;
+    self->last_column = self->column - 1;
 
     if (feof (self->fp)) return SYMBOLS1 (SYM_EOF);
 

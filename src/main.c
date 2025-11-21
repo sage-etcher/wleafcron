@@ -1,5 +1,4 @@
 
-#include <ctype.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -7,8 +6,8 @@
 
 #include "commonos.h"
 #include "config.h"
-#include "morestrings.h"
-#include "scanner.h"
+#include "parser.h"
+#include "rules.h"
 
 /* avoid compiler warnings for unused variables */
 #define UNUSED(v)                                                       \
@@ -29,59 +28,34 @@ main (int argc, char **argv)
 
     char *crontab_path_raw = path_append (DEFAULT_CONFIG_DIR, CONFIG_FILENAME);
     char *crontab_path = expand_envvars (crontab_path_raw);
-    scanner_t scanner = { 0 };
-    symbols_t symbols = { 0 };
-    size_t i = 0;
-    int eof_flag = 0;
+    parser_t parser = { 0 };
+    rules_t *p_rules = &parser.rules;
+    size_t ii = 0;
+    size_t jj = 0;
 
-    printf ("crontab: %s %s\n", crontab_path_raw, crontab_path);
+    parser_init (&parser, crontab_path);
 
-    scanner_init (&scanner, crontab_path);
-
-    while (!eof_flag)
+    parser_parse (&parser);
+    for (ii = 0; ii < p_rules->count; ii++)
     {
-        symbols = scanner_scan (&scanner);
+        printf ("%d %d %d %d %d ",
+                p_rules->m[ii].time[RULE_HOUR],
+                p_rules->m[ii].time[RULE_MINUTE],
+                p_rules->m[ii].time[RULE_MONTH_DAY],
+                p_rules->m[ii].time[RULE_MONTH],
+                p_rules->m[ii].time[RULE_WEEK_DAY]);
 
-        printf ("sym: ");
-        for (i = 0; i < symbols.cnt; i++)
+        for (jj = 0; jj < p_rules->m[ii].count; jj++)
         {
-            switch (symbols.m[i])
-            {
-            case SYM_NUMBER:
-                printf ("SYM_NUMBER(%d), ", scanner.number);
-                break;
-
-            case SYM_STRING:
-                printf ("SYM_STRING('%s'), ", scanner.string.m);
-                break;
-
-            case SYM_GENERIC:
-                printf ("SYM_GENERIC, ");
-                break;
-
-            case SYM_COMMENT:
-                printf ("SYM_COMMENT('%s'), ", scanner.string.m);
-                break;
-
-            case SYM_NEWLINE:
-                printf ("SYM_NEWLINE, ");
-                break;
-
-            case SYM_EOF:
-                printf ("SYM_EOF, ");
-                eof_flag = 1;
-                break;
-
-            case SYM_UNKNOWN:
-            default:
-                printf ("SYM_UNKNOWN, ");
-                break;
-            }
+            printf ("'%s' ", p_rules->m[ii].command[jj]);
         }
+
         putchar ('\n');
     }
 
-    scanner_destroy (&scanner);
+
+
+    parser_destroy (&parser);
     free (crontab_path);
     free (crontab_path_raw);
     return 0;

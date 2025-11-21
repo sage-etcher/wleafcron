@@ -8,7 +8,10 @@ wleafcron = executable(
     'imath.c',
     'main.c',
     'morestrings.c',
+    'parser.c',
+    'rules.c',
     'scanner.c',
+    'symbols.c',
   ],
   dependencies : [
   ],

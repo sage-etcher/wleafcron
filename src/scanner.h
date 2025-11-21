@@ -15,15 +15,12 @@ typedef struct {
     int line;
     int column;
 
+    int last_line;
+    int last_column;
+
     int number;
     struct string string;
 } scanner_t;
-
-typedef struct {
-    enum { MAX_POTENTIAL_SYMBOLS = 2 };
-    symbol_t m[MAX_POTENTIAL_SYMBOLS];
-    size_t cnt;
-} symbols_t;
 
 int scanner_init (scanner_t *self, const char *filename);
 void scanner_destroy (scanner_t *self);

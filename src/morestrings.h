@@ -20,5 +20,7 @@ int string_append (struct string *self, const char *child);
 int string_append_substring (struct string *self, char *child, 
         size_t child_len);
 
+size_t string_get_size (size_t required);
+
 #endif
 /* end of file */
