@@ -16,7 +16,7 @@ typedef struct {
     int column;
 
     int number;
-    struct string command;
+    struct string string;
 } scanner_t;
 
 typedef struct {

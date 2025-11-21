@@ -52,7 +52,7 @@ main (int argc, char **argv)
                 break;
 
             case SYM_STRING:
-                printf ("SYM_STRING('%s'), ", scanner.command.m);
+                printf ("SYM_STRING('%s'), ", scanner.string.m);
                 break;
 
             case SYM_GENERIC:
@@ -60,7 +60,7 @@ main (int argc, char **argv)
                 break;
 
             case SYM_COMMENT:
-                printf ("SYM_COMMENT('%s'), ", scanner.command.m);
+                printf ("SYM_COMMENT('%s'), ", scanner.string.m);
                 break;
 
             case SYM_NEWLINE:
