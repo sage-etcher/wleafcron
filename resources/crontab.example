@@ -1,0 +1,20 @@
+
+#+----------------- hour 0-23
+#|  +-------------- minute 0-59
+#|  |  +----------- day of month 1-31
+#|  |  |  +-------- month of year 1-12
+#|  |  |  |  +----- day of week 1-7 (sun,mon,tue,wed,thur,fri,sat)
+#|  |  |  |  | +--- command
+#|  |  |  |  | |
+00 00 01 01  1 echo "normal"
+08 30  *  *  * echo "generics"
+08 30  *  *  * echo "command w/ symbols" && ls -la * && math 1 + 2
+08 30  *  *  * echo "command w/ comment"    # comment
+
+08 30 **  *  * echo "bad generics"
+08 70  *  *  * echo "minute overflow"
+08 30  * ten * echo "stray string"
+08 30  *  *  * echo "mismatched quotes" && echo 'bad quotes here"
+08 30  *  *  * echo "unclosed quotes" && echo 'unclosed quote here
+
+# end of file
