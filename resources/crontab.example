@@ -6,9 +6,25 @@
 #|  |  |  |  +----- day of week 0-6 (sun,mon,tue,wed,thur,fri,sat)
 #|  |  |  |  | +--- command
 #|  |  |  |  | |
-30 03 01 01  1 echo "normal"
-30 08  *  *  * echo "generics"
-30 08  *  *  *  echo "command w/ symbols" && ls -la * && math 1 + 2
+#30 03 01 01 1 echo "normal"
+#30 08  *  * * echo "generics"
+#30 08  *  * * echo "command w/ symbols" && ls -la * && math 1 + 2
+
+# *  *  *  * * echo "always run"
+ 
+#25  *  *  * * echo "minute"
+# * 13  *  * * echo "hour"
+# *  * 24  * * echo "day of month"
+# *  *  * 11 * echo "month"
+59 13 24 11 * echo "hyper specific"
+
+ *  *  *  *  0 echo "sunday"
+ *  *  *  *  1 echo "monday"
+# *  *  *  * 2 echo "tuesday"
+# *  *  *  * 3 echo "wednesday"
+# *  *  *  * 4 echo "thursday"
+# *  *  *  * 5 echo "friday"
+# *  *  *  * 6 echo "saterday"
 
 #08 30 **  *  * echo "bad generics"
 #08 70  *  *  * echo "minute overflow"

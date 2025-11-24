@@ -3,6 +3,7 @@
 #define RULES_H
 
 #include <stddef.h>
+#include <time.h>
 
 enum {
     RULE_MINUTE,
@@ -34,11 +35,14 @@ extern const char *RULE_PARAM_NAME[RULE_PARAM_COUNT];
 int singlerule_init (singlerule_t *self);
 void singlerule_destroy (singlerule_t *self);
 int singlerule_add_arg (singlerule_t *self, char *new_arg);
+int singlerule_match (singlerule_t *self, struct tm *now);
 
 int rules_init (rules_t *self);
 void rules_destroy (rules_t *self);
 int rules_add (rules_t *self, singlerule_t new_rule);
 int rules_parse (rules_t *self, const char *filename);
+int rules_execute (rules_t *self, struct tm *now);
+
 
 #endif
 /* end of file */

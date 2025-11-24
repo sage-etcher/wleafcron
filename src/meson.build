@@ -1,5 +1,5 @@
 
-add_project_arguments('-ggdb', '-O0', language : 'c')
+add_project_arguments('-ggdb', language : 'c')
 
 wleafcron = executable(
   'wleafcron',
@@ -8,6 +8,7 @@ wleafcron = executable(
     'imath.c',
     'main.c',
     'morestrings.c',
+    'osctrl.c',
     'parser.c',
     'rules.c',
     'scanner.c',

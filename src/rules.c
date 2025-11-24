@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "osctrl.h"
 #include "parser.h"
 
 const int RULE_PARAM_MIN[RULE_PARAM_COUNT] = {
@@ -10,7 +11,7 @@ const int RULE_PARAM_MIN[RULE_PARAM_COUNT] = {
     [RULE_HOUR]      = 0,
     [RULE_MONTH_DAY] = 1,
     [RULE_MONTH]     = 1,
-    [RULE_WEEK_DAY]  = 1,
+    [RULE_WEEK_DAY]  = 0,
 };
 const int RULE_PARAM_MAX[RULE_PARAM_COUNT] = {
     [RULE_MINUTE]    = 59,
@@ -94,6 +95,24 @@ singlerule_destroy (singlerule_t *self)
 }
 
 int
+param_match (singlerule_t *self, size_t param, int now_obj)
+{
+    int x = self->time[param];
+
+    return (x == RULE_GENERIC || x == now_obj);
+}
+
+int
+singlerule_match (singlerule_t *self, struct tm *now)
+{
+    return (param_match (self, RULE_MINUTE, now->tm_min) &&
+            param_match (self, RULE_HOUR,   now->tm_hour) &&
+            param_match (self, RULE_MONTH_DAY, now->tm_mday) &&
+            param_match (self, RULE_MONTH, now->tm_mon) &&
+            param_match (self, RULE_WEEK_DAY, now->tm_wday));
+}
+
+int
 rules_init (rules_t *self)
 {
     *self = (rules_t){ .m = NULL, .alloc = 0, .count = 0 };
@@ -152,5 +171,22 @@ rules_parse (rules_t *self, const char *filename)
     return 0;
 }
 
+int
+rules_execute (rules_t *self, struct tm *now)
+{
+    size_t i = 0;
+    singlerule_t *p_rule = NULL;
+
+    for (i = 0; i < self->count; i++)
+    {
+        p_rule = &self->m[i];
+
+        if (!singlerule_match (p_rule, now)) continue;
+
+        os_execute (p_rule->count, p_rule->command);
+    }
+
+    return 0;
+}
 
 /* end of file */
