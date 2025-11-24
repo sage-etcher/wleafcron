@@ -6,7 +6,6 @@
 
 #include "commonos.h"
 #include "config.h"
-#include "parser.h"
 #include "rules.h"
 
 /* avoid compiler warnings for unused variables */
@@ -39,8 +38,8 @@ main (int argc, char **argv)
     for (ii = 0; ii < rules.count; ii++)
     {
         printf ("%d %d %d %d %d ",
-                rules.m[ii].time[RULE_HOUR],
                 rules.m[ii].time[RULE_MINUTE],
+                rules.m[ii].time[RULE_HOUR],
                 rules.m[ii].time[RULE_MONTH_DAY],
                 rules.m[ii].time[RULE_MONTH],
                 rules.m[ii].time[RULE_WEEK_DAY]);
