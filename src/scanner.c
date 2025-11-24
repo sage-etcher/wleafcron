@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "morestrings.h"
+#include "rules.h"
 #include "symbols.h"
 
 
@@ -166,7 +167,7 @@ scan_maybe_string_generic (scanner_t *self)
 
     if (self->string.count == 1)
     {
-        self->number = -1;
+        self->number = RULE_GENERIC;
         return SYMBOLS2 (SYM_GENERIC, SYM_STRING);
     }
 

@@ -3,16 +3,40 @@
 
 #include <stdlib.h>
 
+#include "parser.h"
+
+const int RULE_PARAM_MIN[RULE_PARAM_COUNT] = {
+    [RULE_MINUTE]    = 0,
+    [RULE_HOUR]      = 0,
+    [RULE_MONTH_DAY] = 1,
+    [RULE_MONTH]     = 1,
+    [RULE_WEEK_DAY]  = 1,
+};
+const int RULE_PARAM_MAX[RULE_PARAM_COUNT] = {
+    [RULE_MINUTE]    = 59,
+    [RULE_HOUR]      = 23,
+    [RULE_MONTH_DAY] = 31,
+    [RULE_MONTH]     = 12,
+    [RULE_WEEK_DAY]  = 6,
+};
+const char *RULE_PARAM_NAME[RULE_PARAM_COUNT] = {
+    [RULE_MINUTE]    = "Minute",
+    [RULE_HOUR]      = "Hour",
+    [RULE_MONTH_DAY] = "Day of the month",
+    [RULE_MONTH]     = "Month of the year",
+    [RULE_WEEK_DAY]  = "Day of the week",
+};
+
 int
 singlerule_init (singlerule_t *self)
 {
     singlerule_t new = (singlerule_t){
         .time = {
-            [RULE_HOUR]      = -1,
-            [RULE_MINUTE]    = -1,
-            [RULE_MONTH_DAY] = -1,
-            [RULE_MONTH]     = -1,
-            [RULE_WEEK_DAY]  = -1,
+            [RULE_HOUR]      = RULE_GENERIC,
+            [RULE_MINUTE]    = RULE_GENERIC,
+            [RULE_MONTH_DAY] = RULE_GENERIC,
+            [RULE_MONTH]     = RULE_GENERIC,
+            [RULE_WEEK_DAY]  = RULE_GENERIC,
         },
         .command = malloc (sizeof (char *)),
         .alloc = 1,
@@ -116,6 +140,17 @@ rules_destroy (rules_t *self)
     self->count = 0;
 }
 
+int
+rules_parse (rules_t *self, const char *filename)
+{
+    parser_t parser = { 0 };
+    parser_init (&parser, filename, self);
+
+    parser_parse (&parser);
+
+    parser_destroy (&parser);
+    return 0;
+}
 
 
 /* end of file */

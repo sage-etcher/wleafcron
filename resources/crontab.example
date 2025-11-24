@@ -1,14 +1,14 @@
 
-#+----------------- hour 0-23
-#|  +-------------- minute 0-59
+#+----------------- minute 0-59
+#|  +-------------- hour 0-23
 #|  |  +----------- day of month 1-31
 #|  |  |  +-------- month of year 1-12
-#|  |  |  |  +----- day of week 1-7 (sun,mon,tue,wed,thur,fri,sat)
+#|  |  |  |  +----- day of week 0-6 (sun,mon,tue,wed,thur,fri,sat)
 #|  |  |  |  | +--- command
 #|  |  |  |  | |
 30 03 01 01  1 echo "normal"
-08 30  *  *  * echo "generics"
-08 30  *  *  *  echo "command w/ symbols" && ls -la * && math 1 + 2
+30 08  *  *  * echo "generics"
+30 08  *  *  *  echo "command w/ symbols" && ls -la * && math 1 + 2
 
 #08 30 **  *  * echo "bad generics"
 #08 70  *  *  * echo "minute overflow"

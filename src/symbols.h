@@ -17,8 +17,9 @@ typedef enum {
 
 extern const char *SYM_TEXT[SYM_COUNT];
 
+#define MAX_POTENTIAL_SYMBOLS 2
+
 typedef struct {
-    enum { MAX_POTENTIAL_SYMBOLS = 2 };
     symbol_t m[MAX_POTENTIAL_SYMBOLS];
     size_t cnt;
 } symbols_t;
