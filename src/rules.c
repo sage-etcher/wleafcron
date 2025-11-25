@@ -39,6 +39,7 @@ singlerule_init (singlerule_t *self)
             [RULE_MONTH]     = RULE_GENERIC,
             [RULE_WEEK_DAY]  = RULE_GENERIC,
         },
+        .status = RULE_NOT_MATCHED,
         .command = malloc (sizeof (char *)),
         .alloc = 1,
         .count = 0,
@@ -181,8 +182,15 @@ rules_execute (rules_t *self, struct tm *now)
     {
         p_rule = &self->m[i];
 
-        if (!singlerule_match (p_rule, now)) continue;
+        if (!singlerule_match (p_rule, now)) 
+        {
+            p_rule->status = RULE_NOT_MATCHED;
+            continue;
+        }
 
+        if (p_rule->status == RULE_MATCHED) continue;
+
+        p_rule->status = RULE_MATCHED;
         os_execute (p_rule->count, p_rule->command);
     }
 

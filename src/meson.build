@@ -1,19 +1,28 @@
 
 add_project_arguments('-ggdb', language : 'c')
 
+wleafcron_srcs = files([
+  'commonos.c',
+  'imath.c',
+  'main.c',
+  'morestrings.c',
+  'parser.c',
+  'rules.c',
+  'scanner.c',
+  'symbols.c',
+])
+
+os = build_machine.system().to_lower()
+if os == 'linux' or os.endswith('bsd') or os == 'cygwin'
+  wleafcron_srcs += ['unix_osctrl.c']
+
+elif os = 'windows'
+  wleafcron_srcs += ['win_osctrl.c']
+endif
+
 wleafcron = executable(
   'wleafcron',
-  [
-    'commonos.c',
-    'imath.c',
-    'main.c',
-    'morestrings.c',
-    'osctrl.c',
-    'parser.c',
-    'rules.c',
-    'scanner.c',
-    'symbols.c',
-  ],
+  wleafcron_srcs,
   dependencies : [
   ],
 )

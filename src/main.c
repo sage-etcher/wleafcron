@@ -7,6 +7,7 @@
 
 #include "commonos.h"
 #include "config.h"
+#include "osctrl.h"
 #include "rules.h"
 
 /* avoid compiler warnings for unused variables */
@@ -33,18 +34,37 @@ main (int argc, char **argv)
     time_t now_time = 0;
     struct tm *now_tm = NULL;
 
+    time_t oh = 0;
+    time_t last_modified = os_fmtime (crontab_path);
     rules_init (&rules);
     rules_parse (&rules, crontab_path);
 
-    now_time = time (NULL);
-    now_tm = localtime (&now_time);
+    while (1)
+    {
+        now_time = time (NULL);
+        now_tm = localtime (&now_time);
 
-    rules_execute (&rules, now_tm);
+        if ((oh = os_fmtime (crontab_path)) != last_modified)
+        {
+            fprintf (stdout, "crontab updated, reloading - %s\n", crontab_path);
+
+            rules_destroy (&rules);
+            rules_init (&rules);
+            rules_parse (&rules, crontab_path);
+
+            last_modified = oh;
+        }
+        rules_execute (&rules, now_tm);
+        os_sleep (1);
+    }
 
     rules_destroy (&rules);
     free (crontab_path);
     free (crontab_path_raw);
     return 0;
 }
+
+
+
 
 /* end of file */

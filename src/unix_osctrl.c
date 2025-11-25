@@ -1,34 +1,36 @@
 
-#include "osctrl.h"
+#include "unix_osctrl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "commonos.h"
 #include "morestrings.h"
 
-#if defined __unix__
 #include <unistd.h>
-#endif
+#include <sys/stat.h>
 
 
-#if defined __unix__
-static int file_is_executable (const char *filepath);
-static char *find_program_on_path (const char *path, const char *program);
-static char *find_program (const char *program);
-static char **terminate_str_array (int n, char **src);
-static int unix_os_execute (int argc, char **argv);
+int unix_os_execute (int argc, char **argv);
+time_t unix_os_fmtime (const char *filename);
+void unix_os_sleep (unsigned seconds);
+
+static int unix_file_is_executable (const char *filepath);
+static char *unix_find_program_on_path (const char *path, const char *program);
+static char *unix_find_program (const char *program);
+static char **unix_terminate_str_array (int n, char **src);
 
 
 static int
-file_is_executable (const char *filepath)
+unix_file_is_executable (const char *filepath)
 {
     return (!access (filepath, F_OK) && !access (filepath, X_OK));
 }
 
 static char *
-find_program_on_path (const char *path, const char *program)
+unix_find_program_on_path (const char *path, const char *program)
 {
     char *path_copy = strdup (path);
     char *program_path = NULL;
@@ -37,7 +39,7 @@ find_program_on_path (const char *path, const char *program)
     while (iter != NULL)
     {
         program_path = path_append (iter, program);
-        if (file_is_executable (program_path))
+        if (unix_file_is_executable (program_path))
         {
             return program_path;
         }
@@ -50,18 +52,18 @@ find_program_on_path (const char *path, const char *program)
 }
 
 static char *
-find_program (const char *program)
+unix_find_program (const char *program)
 {
-    if (program[0] == '/' && file_is_executable (program)) 
+    if (program[0] == '/' && unix_file_is_executable (program)) 
     {
         return strdup (program);
     }
 
-    return find_program_on_path (strdup (getenv ("PATH")), program);
+    return unix_find_program_on_path (strdup (getenv ("PATH")), program);
 }
 
 static char **
-terminate_str_array (int n, char **src)
+unix_terminate_str_array (int n, char **src)
 {
     char **dst = malloc ((n + 1) * sizeof (*dst));
     int i = 0;
@@ -75,7 +77,7 @@ terminate_str_array (int n, char **src)
     return dst;
 }
 
-static int 
+int 
 unix_os_execute (int argc, char **argv)
 {
     char *prog_path = NULL; 
@@ -84,8 +86,8 @@ unix_os_execute (int argc, char **argv)
 
     if (child_pid == 0)
     {
-        new_argv = terminate_str_array (argc, argv);
-        prog_path = find_program (argv[0]);
+        new_argv = unix_terminate_str_array (argc, argv);
+        prog_path = unix_find_program (argv[0]);
         if (prog_path == NULL)
         {
             fprintf (stderr, "error: cannot find %s\n", argv[0]);
@@ -107,17 +109,24 @@ unix_os_execute (int argc, char **argv)
 
     return -1;
 }
-#endif
 
-
-int
-os_execute (int argc, char **argv)
+time_t
+unix_os_fmtime (const char *filename)
 {
-#if defined __unix__
-    unix_os_execute (argc, argv);
-#endif
+    struct stat attr = { 0 };
+
+    if (stat (filename, &attr) == 0)
+    {
+        return attr.st_mtime;
+    }
 
     return 0;
+}
+
+void
+unix_os_sleep (unsigned seconds)
+{
+    sleep (seconds);
 }
 
 /* end of file */

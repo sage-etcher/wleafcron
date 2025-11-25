@@ -14,8 +14,14 @@ enum {
     RULE_PARAM_COUNT,
 };
 
+enum {
+    RULE_NOT_MATCHED,
+    RULE_MATCHED,
+};
+
 typedef struct {
     int time[RULE_PARAM_COUNT];
+    int status;
     char **command;
     size_t alloc;
     size_t count;
