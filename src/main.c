@@ -33,7 +33,4 @@ main (int argc, char **argv)
     return rc;
 }
 
-
-
-
 /* end of file */

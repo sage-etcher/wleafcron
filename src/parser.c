@@ -162,5 +162,4 @@ parser_parse (parser_t *self)
     return 0;
 }
 
-
 /* end of file */

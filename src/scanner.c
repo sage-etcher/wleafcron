@@ -201,5 +201,4 @@ scanner_scan (scanner_t *self)
     return scan_maybe_string_number (self);
 }
 
-
 /* end of file */
