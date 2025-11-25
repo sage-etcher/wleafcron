@@ -9,6 +9,12 @@
 
 #include "morestrings.h"
 
+#if defined _WIN32
+#   define DIR_SEPERATOR "\\"
+#elif defined __unix__ 
+#   define DIR_SEPERATOR "/"
+#endif
+
 char *
 path_append (const char *parent, const char *child)
 {
@@ -21,9 +27,9 @@ path_append (const char *parent, const char *child)
         return NULL;
     }
 
-    string_init (&path, strlen (parent) + sizeof ('/') + strlen (child));
+    string_init (&path, strlen (parent) + sizeof (char) + strlen (child));
     string_append (&path, parent);
-    string_append (&path, "/");
+    string_append (&path, DIR_SEPERATOR);
     string_append (&path, child);
 
     return path.m;

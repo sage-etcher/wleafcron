@@ -61,7 +61,7 @@ unix_find_program (const char *program)
         return strdup (program);
     }
 
-    return unix_find_program_on_path (strdup (getenv ("PATH")), program);
+    return unix_find_program_on_path (getenv ("PATH"), program);
 }
 
 static char **

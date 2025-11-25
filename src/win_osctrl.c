@@ -3,20 +3,91 @@
 
 #if defined _WIN32
 
+#include "commonos.h"
 #include "morestrings.h"
 
 #include <stdio.h>
 #include <time.h>
 #include <windows.h>
 
+static int win_file_exists (const char *filepath);
+static char *win_generate_cmdline (int argc, char **argv);
+
+static int
+win_file_exists (const char *filepath)
+{
+    FILE *fp = fopen (filepath, "r");
+
+    if (fp == NULL) return 0;
+
+    fclose (fp);
+    return 1;
+}
+
+static char *
+win_find_program_on_path (const char *path, const char *program)
+{
+    char *path_copy = strdup (path);
+    char *program_path = NULL;
+
+    char *iter = strtok (path_copy, ";");
+    while (iter != NULL)
+    {
+        program_path = path_append (iter, program);
+        if (win_file_exists (program_path))
+        {
+            return program_path;
+        }
+
+        free (program_path);
+        iter = strtok (NULL, ";");
+    }
+
+    return NULL;
+}
+
+static char *
+win_find_program (const char *program)
+{
+    if (win_file_exists (program)) 
+    {
+        return strdup (program);
+    }
+
+    return win_find_program_on_path (getenv ("PATH"), program);
+}
+
+static char *
+win_generate_cmdline (int argc, char **argv)
+{
+    int i = 0;
+    struct string cmdline = { 0 };
+    string_init (&cmdline, 0);
+
+    for (i = 0; i < argc; i++)
+    {
+        string_append (&cmdline, "\"");
+        string_append (&cmdline, argv[i]);
+        string_append (&cmdline, "\"");
+
+        if (i + 1 != argc)
+        {
+            string_append (&cmdline, " ");
+        }
+    }
+
+    return cmdline.m;
+}
+
 int
 win_os_execute (int argc, char **argv)
 {
-    char *cmdline = string_join (argv, argc, " ");
+    char *program = win_find_program (argv[0]);
+    char *cmdline = win_generate_cmdline (argc-1, argv+1);
     PROCESS_INFORMATION process_info = { 0 };
     STARTUPINFOA info = { .cb = sizeof (info) };
 
-    if (CreateProcessA (NULL, cmdline, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, 
+    if (CreateProcessA (program, cmdline, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, 
                 NULL, NULL, &info, &process_info))
     {
         //WaitForSingleObject (process_info.hProcess, INFINITE);
@@ -25,6 +96,7 @@ win_os_execute (int argc, char **argv)
     }
 
     free (cmdline);
+    free (program);
     return 0;
 }
 
