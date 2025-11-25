@@ -2,7 +2,7 @@
 project(
   'wleafcron',
   'c',
-  version : '0.1.0',
+  version : '0.2.0',
   license : 'MIT',
   default_options : [
     'c_std=c99',
