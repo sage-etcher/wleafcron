@@ -120,26 +120,19 @@ scan_quoted_string (scanner_t *self)
     size_t i = 0;
     char quote = self->ch;
 
+    readch (self);  /* pop the initial quote */
+
     self->string.count = 0;
-    do {
-
-        string_extend (&self->string, i);
-        self->string.m[i] = self->ch;
-
-        i++;
-        readch (self);
-
+    for (; self->ch != quote; i++, readch (self))
+    {
         if (feof (self->fp) || self->ch == '\n' || self->ch == '\r')
         {
             return SYMBOLS1 (SYM_UNKNOWN);
         }
 
-    } while (self->ch != quote);
-
-
-    self->string.m[i] = quote;
-    string_extend (&self->string, i++);
-
+        string_extend (&self->string, i);
+        self->string.m[i] = self->ch;
+    }
     self->string.m[i] = '\0';
     self->string.count = i;
 
