@@ -1,6 +1,8 @@
 
 #include "unix_osctrl.h"
 
+#if defined __unix__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,4 +131,5 @@ unix_os_sleep (unsigned seconds)
     sleep (seconds);
 }
 
+#endif
 /* end of file */

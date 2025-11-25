@@ -132,4 +132,24 @@ string_append_substring (struct string *self, char *child, size_t child_len)
     return rc;
 }
 
+char *
+string_join (char **arr, size_t n, const char *seperator)
+{
+    size_t i = 0;
+    struct string res = { 0 };
+    string_init (&res, 0);
+
+    for (; i < n; i++)
+    {
+        string_append (&res, arr[i]);
+
+        if (i + 1 < n)
+        {
+            string_append (&res, seperator);
+        }
+    }
+
+    return res.m;
+}
+
 /* end of file */

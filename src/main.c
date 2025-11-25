@@ -26,7 +26,11 @@ main (int argc, char **argv)
 
     char *crontab_path_raw = path_append (DEFAULT_CONFIG_DIR, CONFIG_FILENAME);
     char *crontab_path = expand_envvars (crontab_path_raw);
-    int rc = crond (crontab_path);
+    int rc = 0;
+
+    fprintf (stderr, "crontab - %s (%s)\n", crontab_path, crontab_path_raw);
+
+    rc = crond (crontab_path);
 
     free (crontab_path);
     free (crontab_path_raw);

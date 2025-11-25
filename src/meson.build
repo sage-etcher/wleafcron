@@ -13,19 +13,17 @@ wleafcron_srcs = files([
   'symbols.c',
 ])
 
-os = build_machine.system().to_lower()
+os = host_machine.system().to_lower()
 if os == 'linux' or os.endswith('bsd') or os == 'cygwin'
   wleafcron_srcs += ['unix_osctrl.c']
-
-elif os = 'windows'
+elif os == 'windows'
   wleafcron_srcs += ['win_osctrl.c']
 endif
 
 wleafcron = executable(
   'wleafcron',
   wleafcron_srcs,
-  dependencies : [
-  ],
+  win_subsystem : 'console',
 )
 
 # end of file

@@ -9,12 +9,12 @@
 #define os_sleep   unix_os_sleep
 #define os_fmtime  unix_os_fmtime
 
-#elif _WIN32
+#elif defined _WIN32
 #include "win_osctrl.h"
 
-#deine os_execute win_os_execute
-#deine os_sleep   win_os_sleep
-#deine os_sleep   win_os_fmtime
+#define os_execute win_os_execute
+#define os_sleep   win_os_sleep
+#define os_fmtime  win_os_fmtime
 #endif
 
 #endif
