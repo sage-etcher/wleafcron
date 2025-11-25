@@ -5,7 +5,7 @@
 #if defined __unix__
 #   define DEFAULT_CONFIG_DIR  "%HOME%/.config/wleafcron"
 #elif defined _WIN32
-#   define DEFAULT_CONFIG_DIR  "%APPDATA%/wleafcron"
+#   define DEFAULT_CONFIG_DIR  "%APPDATA%\\wleafcron"
 #endif
 
 #define CONFIG_FILENAME     "crontab"
