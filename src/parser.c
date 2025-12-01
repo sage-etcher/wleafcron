@@ -5,39 +5,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "log.h"
 #include "rules.h"
 #include "scanner.h"
 #include "symbols.h"
 
-static int sym_exists (parser_t *self, symbols_t accepted_syms);
 static int accept (parser_t *self, symbols_t accepted_syms);
 static void expect (parser_t *self, symbols_t expected_syms);
 static int stmt (parser_t *self);
 static void stmtseq (parser_t *self);
 
-static int
-sym_exists (parser_t *self, symbols_t accepted_syms)
-{
-    size_t ii = 0;
-    size_t jj = 0;
-    for (; ii < self->syms.cnt; ii++)
-    {
-        for (jj = 0; jj < accepted_syms.cnt; jj++)
-        {
-            if (self->syms.m[ii] == accepted_syms.m[jj])
-            {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
 
 static int
 accept (parser_t *self, symbols_t accepted_syms)
 {
-    int rc = sym_exists (self, accepted_syms);
+
+
+
+    int rc = sym_exists (self->syms, accepted_syms);
     if (rc)
     {
         self->syms = scanner_scan (&self->scanner);
@@ -51,7 +36,7 @@ expect (parser_t *self, symbols_t expected_syms)
 {
     if (!accept (self, expected_syms))
     {
-        fprintf (stderr, "error: %d %d: syntax error\n",
+        LOG_F ("%d %d: syntax error", 
                 self->scanner.last_line, self->scanner.last_column);
         exit (EXIT_FAILURE);
     }
@@ -78,17 +63,23 @@ parser_destroy (parser_t *self)
 static int
 parse_rule (parser_t *self)
 {
+    int rc = 0;
     size_t i = 0;
     singlerule_t data = { 0 };
 
-    singlerule_init (&data);
+    rc = singlerule_init (&data);
+    if (rc)
+    {
+        LOG_E ("failure to initialize singlerule");
+        return 1;
+    }
 
     /* get time parameters from line */
     for (; i < RULE_PARAM_COUNT; i++)
     {
-        if (!sym_exists (self, SYMBOLS2 (SYM_GENERIC, SYM_NUMBER)))
+        if (!sym_exists (self->syms, SYMBOLS2 (SYM_GENERIC, SYM_NUMBER)))
         {
-            fprintf (stderr, "error: %d %d: expected a proper date\n",
+            LOG_E ("%d %d: expected a proper date",
                     self->scanner.last_line, self->scanner.last_column);
             return 1;
         }
@@ -98,7 +89,7 @@ parse_rule (parser_t *self)
               ((RULE_PARAM_MIN[i] <= self->scanner.number) &&
                (RULE_PARAM_MAX[i] >= self->scanner.number))))
         {
-            fprintf (stderr, "error: %d %d: %s can only be * or value %d-%d\n",
+            LOG_E ("%d %d: %s can only be * or value %d-%d",
                     self->scanner.last_line, self->scanner.last_column,
                     RULE_PARAM_NAME[i], RULE_PARAM_MIN[i], RULE_PARAM_MAX[i]);
             return 1;
@@ -109,7 +100,7 @@ parse_rule (parser_t *self)
     }
 
     /* get command and args */
-    while (sym_exists (self, SYMBOLS1 (SYM_STRING)))
+    while (sym_exists (self->syms, SYMBOLS1 (SYM_STRING)))
     {
         singlerule_add_arg (&data, strdup (self->scanner.string.m));
         self->syms = scanner_scan (&self->scanner);
@@ -117,7 +108,7 @@ parse_rule (parser_t *self)
 
     if (data.count == 0)
     {
-        fprintf (stderr, "error: %d %d: expected a command\n",
+        LOG_E ("%d %d: expected a command",
                 self->scanner.last_line, self->scanner.last_column);
         return 1;
     }
@@ -133,9 +124,15 @@ static int
 stmt (parser_t *self)
 {
 
-    if (sym_exists (self, SYMBOLS2 (SYM_NEWLINE, SYM_EOF))) return 0;
+    if (sym_exists (self->syms, SYMBOLS2 (SYM_NEWLINE, SYM_EOF))) 
+    {
+        return 0;
+    }
 
-    if (accept (self, SYMBOLS1 (SYM_COMMENT))) return 0;
+    if (accept (self, SYMBOLS1 (SYM_COMMENT))) 
+    {
+        return 0;
+    }
 
     return parse_rule (self);
 }

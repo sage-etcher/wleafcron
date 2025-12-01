@@ -3,21 +3,18 @@
 
 #if defined __unix__
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "commonos.h"
+#include "log.h"
 #include "morestrings.h"
 
 #include <unistd.h>
 #include <sys/stat.h>
-
-
-int unix_os_execute (int argc, char **argv);
-time_t unix_os_fmtime (const char *filename);
-void unix_os_sleep (unsigned seconds);
 
 static int unix_file_is_executable (const char *filepath);
 static char *unix_find_program_on_path (const char *path, const char *program);
@@ -34,13 +31,32 @@ unix_file_is_executable (const char *filepath)
 static char *
 unix_find_program_on_path (const char *path, const char *program)
 {
-    char *path_copy = strdup (path);
+    char *path_copy = NULL;
     char *program_path = NULL;
+
+    if ((path == NULL) || (program == NULL))
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    path_copy = strdup (path);
+    if (path_copy == NULL)
+    {
+        LOG_E ("path_copy strdup failure");
+        return NULL;
+    }
 
     char *iter = strtok (path_copy, ":");
     while (iter != NULL)
     {
         program_path = path_append (iter, program);
+        if (program_path == NULL)
+        {
+            LOG_E ("program_path path_append failure");
+            return NULL;
+        }
+
         if (unix_file_is_executable (program_path))
         {
             return program_path;
@@ -67,12 +83,35 @@ unix_find_program (const char *program)
 static char **
 unix_terminate_str_array (int n, char **src)
 {
-    char **dst = malloc ((n + 1) * sizeof (*dst));
+    char **dst = NULL;
     int i = 0;
+
+    if (src == NULL)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    dst = (char **)malloc ((n + 1) * sizeof (*dst));
+    if (dst == NULL)
+    {
+        LOG_E ("dst memory allocation failure");
+        return NULL;
+    }
 
     for (i = 0; i < n; i++)
     {
         dst[i] = strdup (src[i]);
+        if (dst[i] == NULL)
+        {
+            LOG_E ("dst[%d] strdup failure", i);
+            while (--i >= 0)
+            {
+                free (dst[i]);
+            }
+            free ((void *)dst);
+            return NULL;
+        }
     }
     dst[i+1] = NULL;
 
@@ -84,7 +123,14 @@ unix_os_execute (int argc, char **argv)
 {
     char *prog_path = NULL; 
     char **new_argv = NULL; 
-    int child_pid = fork ();
+    int child_pid = 0;
+
+    if (argv == NULL)
+    {
+        return (errno = EINVAL);
+    }
+
+    child_pid = fork ();
 
     if (child_pid == 0)
     {
@@ -92,7 +138,7 @@ unix_os_execute (int argc, char **argv)
         prog_path = unix_find_program (argv[0]);
         if (prog_path == NULL)
         {
-            fprintf (stderr, "error: cannot find %s\n", argv[0]);
+            LOG_F ("cannot find %s", argv[0]);
             exit (0);
         }
 
@@ -105,7 +151,7 @@ unix_os_execute (int argc, char **argv)
     }
     else if (child_pid < 0)
     {
-        fprintf (stderr, "error: cannot start child process\n");
+        LOG_E ("cannot start child process");
         return -1;
     }
 
@@ -128,7 +174,7 @@ unix_os_fmtime (const char *filename)
 void
 unix_os_sleep (unsigned seconds)
 {
-    sleep (seconds);
+    (void)sleep (seconds);
 }
 
 #endif

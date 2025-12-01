@@ -9,8 +9,13 @@ log2sz (const size_t x)
     size_t y = 0;
 
 #if defined __has_builtin && __has_builtin (__builtin_clzll)
-    if (x == 0) return 0;
-    y = 64 - __builtin_clzll (x);
+    const int SZ_BITS = sizeof (size_t) * 8;
+
+    if (x == 0) 
+    {
+        return 0;
+    }
+    y = SZ_BITS - __builtin_clzll (x);
 
 #else
 #warning "log2sz: using slow for loop, no builtin's found."

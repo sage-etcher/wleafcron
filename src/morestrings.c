@@ -7,24 +7,20 @@
 #include <string.h>
 
 #include "imath.h"
+#include "log.h"
 
 
 
 #ifndef strdup
 char *
-strdup (const char *src)
+strdup (const char *src) /* NOLINT */
 {
     char *dst = NULL;
-
-    if (src == NULL)
-    {
-        errno = EINVAL;
-        return NULL;
-    }
 
     dst = malloc (strlen (src) + 1);
     if (dst == NULL)
     {
+        LOG_F ("failed memory allocation");
         return NULL;
     }
 
@@ -54,6 +50,7 @@ string_init (struct string *self, size_t initial_size)
     rc = string_extend (self, string_get_size (initial_size));
     if (rc || self->m == NULL)
     {
+        LOG_F ("failed string extend");
         return rc;
     }
 
@@ -68,6 +65,11 @@ string_extend (struct string *self, size_t min_size)
     size_t new_alloc = 0;
     void *tmp = NULL;
 
+    if (self == NULL)
+    {
+        return (errno = EINVAL);
+    }
+
     if (min_size <= self->alloc)
     {
         return 0;
@@ -77,6 +79,7 @@ string_extend (struct string *self, size_t min_size)
     tmp = realloc (self->m, new_alloc);
     if (tmp == NULL)
     {
+        LOG_E ("failed realloc");
         return errno;
     }
 
@@ -135,18 +138,26 @@ string_append_substring (struct string *self, char *child, size_t child_len)
 char *
 string_join (char **arr, size_t n, const char *seperator)
 {
+    int rc = 0;
     size_t i = 0;
     struct string res = { 0 };
-    string_init (&res, 0);
+    rc |= string_init (&res, 0);
 
     for (; i < n; i++)
     {
-        string_append (&res, arr[i]);
+        rc |= string_append (&res, arr[i]);
 
         if (i + 1 < n)
         {
-            string_append (&res, seperator);
+            rc |= string_append (&res, seperator);
         }
+    }
+
+    if (rc)
+    {
+        LOG_F ("failed string operation");
+        free (res.m);
+        return NULL;
     }
 
     return res.m;

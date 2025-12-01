@@ -4,38 +4,72 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "rules.h"
+#include "log.h"
 #include "osctrl.h"
+#include "rules.h"
 
 
 int
 crond (const char *crontab)
 {
+    int rc = 0;
     rules_t rules = { 0 };
     time_t now_time = 0;
     struct tm *now_tm = NULL;
 
     time_t oh = 0;
     time_t last_modified = os_fmtime (crontab);
-    rules_init (&rules);
-    rules_parse (&rules, crontab);
+
+    rc = rules_init (&rules);
+    if (rc)
+    {
+        LOG_E ("failure initializing rules");
+        return rc;
+    }
+
+    rc = rules_parse (&rules, crontab);
+    if (rc)
+    {
+        LOG_E ("failure while parsing rules");
+        rules_destroy (&rules);
+        return rc;
+    }
 
     while (1)
     {
         now_time = time (NULL);
         now_tm = localtime (&now_time);
 
-        if ((oh = os_fmtime (crontab)) != last_modified)
+        oh = os_fmtime (crontab);
+        if (oh != last_modified)
         {
-            fprintf (stdout, "crontab updated, reloading - %s\n", crontab);
+            LOG_I ("crontab updated, reloading - %s", crontab);
 
             rules_destroy (&rules);
-            rules_init (&rules);
-            rules_parse (&rules, crontab);
+
+            rc = rules_init (&rules);
+            if (rc)
+            {
+                LOG_E ("failure reinitializing rules");
+                return rc;
+            }
+
+            rc = rules_parse (&rules, crontab);
+            if (rc)
+            {
+                LOG_E ("failure while reparsing rules");
+                rules_destroy (&rules);
+                return rc;
+            }
 
             last_modified = oh;
         }
-        rules_execute (&rules, now_tm);
+
+        if (rules_execute (&rules, now_tm))
+        {
+            LOG_E ("failure in rule execution");
+        }
+
         os_sleep (1);
     }
 

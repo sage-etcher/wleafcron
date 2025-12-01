@@ -3,6 +3,7 @@
 if get_option('buildtype').contains('debug')
   add_project_arguments('-ggdb', language : 'c')
 endif
+add_project_arguments('-ggdb', language : 'c')
 
 wleafcron_srcs = files([
   'commonos.c',

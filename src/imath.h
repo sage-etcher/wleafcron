@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-size_t log2sz (const size_t x);
+size_t log2sz (size_t x);
 
 #endif
 /* end of file */

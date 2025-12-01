@@ -4,6 +4,7 @@
 #if defined _WIN32
 
 #include "commonos.h"
+#include "log.h"
 #include "morestrings.h"
 
 #include <stdio.h>
@@ -16,24 +17,53 @@ static char *win_generate_cmdline (int argc, char **argv);
 static int
 win_file_exists (const char *filepath)
 {
-    FILE *fp = fopen (filepath, "r");
+    FILE *fp = NULL;
 
-    if (fp == NULL) return 0;
+    if (filepath == NULL)
+    {
+        errno = EINVAL;
+        return 0;
+    }
 
-    fclose (fp);
+    fp = fopen (filepath, "r");
+    if (fp == NULL) 
+    {
+        return 0;
+    }
+
+    (void)fclose (fp);
     return 1;
 }
 
 static char *
 win_find_program_on_path (const char *path, const char *program)
 {
-    char *path_copy = strdup (path);
+    char *path_copy = NULL;
     char *program_path = NULL;
+
+    if ((path == NULL) || (program == NULL))
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    path_copy = strdup (path);
+    if (path_copy == NULL)
+    {
+        LOG_E ("path_copy memory error");
+        return NULL;
+    }
 
     char *iter = strtok (path_copy, ";");
     while (iter != NULL)
     {
         program_path = path_append (iter, program);
+        if (program_path == NULL)
+        {
+            LOG_E ("program_path memory error");
+            return NULL;
+        }
+
         if (win_file_exists (program_path))
         {
             return program_path;
@@ -49,6 +79,12 @@ win_find_program_on_path (const char *path, const char *program)
 static char *
 win_find_program (const char *program)
 {
+    if (program == NULL)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+
     if (win_file_exists (program)) 
     {
         return strdup (program);
@@ -60,20 +96,29 @@ win_find_program (const char *program)
 static char *
 win_generate_cmdline (int argc, char **argv)
 {
+    int rc = 0;
     int i = 0;
     struct string cmdline = { 0 };
-    string_init (&cmdline, 0);
+
+    rc |= string_init (&cmdline, 0);
 
     for (i = 0; i < argc; i++)
     {
-        string_append (&cmdline, "\"");
-        string_append (&cmdline, argv[i]);
-        string_append (&cmdline, "\"");
+        rc |= string_append (&cmdline, "\"");
+        rc |= string_append (&cmdline, argv[i]);
+        rc |= string_append (&cmdline, "\"");
 
         if (i + 1 != argc)
         {
-            string_append (&cmdline, " ");
+            rc |= string_append (&cmdline, " ");
         }
+    }
+
+    if (rc)
+    {
+        LOG_E ("cmdline string generation");
+        free (cmdline.m);
+        return NULL;
     }
 
     return cmdline.m;
@@ -82,10 +127,15 @@ win_generate_cmdline (int argc, char **argv)
 int
 win_os_execute (int argc, char **argv)
 {
-    char *program = win_find_program (argv[0]);
-    char *cmdline = win_generate_cmdline (argc-1, argv+1);
+    char *program = NULL;
+    char *cmdline = NULL; 
     PROCESS_INFORMATION process_info = { 0 };
     STARTUPINFOA info = { .cb = sizeof (info) };
+
+    return 0;
+
+    program = win_find_program (argv[0]);
+    cmdline = win_generate_cmdline (argc-1, argv+1);
 
     if (CreateProcessA (program, cmdline, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, 
                 NULL, NULL, &info, &process_info))
@@ -100,6 +150,8 @@ win_os_execute (int argc, char **argv)
     return 0;
 }
 
+static int i = 0;
+
 time_t
 win_os_fmtime (const char *filename)
 {
@@ -108,6 +160,8 @@ win_os_fmtime (const char *filename)
     SYSTEMTIME mtime_system = { 0 };
     struct tm  mtime_tm = { 0 };
     time_t     mtime = 0;
+
+    return i++;
 
     h_file = CreateFile (filename, GENERIC_READ, FILE_SHARE_READ, NULL, 
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

@@ -27,5 +27,7 @@ typedef struct {
 #define SYMBOLS1(x)    (symbols_t){ .cnt = 1, .m = { x }    }
 #define SYMBOLS2(x, y) (symbols_t){ .cnt = 2, .m = { x, y } }
 
+int sym_exists (symbols_t self, symbols_t accepted_syms);
+
 #endif
 /* end of file */

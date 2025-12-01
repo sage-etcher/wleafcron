@@ -6,6 +6,7 @@
 #include "commonos.h"
 #include "config.h"
 #include "crond.h"
+#include "log.h"
 
 /* avoid compiler warnings for unused variables */
 #define UNUSED(v)                                                       \
@@ -18,6 +19,12 @@
     } while (0)
 
 
+void
+atexit_cb (void)
+{
+    abort ();
+}
+
 int
 main (int argc, char **argv)
 {
@@ -28,7 +35,9 @@ main (int argc, char **argv)
     char *crontab_path = expand_envvars (crontab_path_raw);
     int rc = 0;
 
-    fprintf (stderr, "crontab - %s (%s)\n", crontab_path, crontab_path_raw);
+    atexit (atexit_cb);
+
+    LOG_I ("crontab - %s (%s)", crontab_path, crontab_path_raw);
 
     rc = crond (crontab_path);
 

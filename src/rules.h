@@ -33,7 +33,7 @@ typedef struct {
     size_t count;
 } rules_t;
 
-#define RULE_GENERIC -1
+#define RULE_GENERIC (-1)
 extern const int RULE_PARAM_MIN[RULE_PARAM_COUNT];
 extern const int RULE_PARAM_MAX[RULE_PARAM_COUNT];
 extern const char *RULE_PARAM_NAME[RULE_PARAM_COUNT];

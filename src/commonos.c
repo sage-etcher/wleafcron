@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
 #include "morestrings.h"
 
 #if defined _WIN32
@@ -15,9 +16,12 @@
 #   define DIR_SEPERATOR "/"
 #endif
 
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+
 char *
 path_append (const char *parent, const char *child)
 {
+    int rc = 0;
     struct string path = { 0 };
 
     /* null guard */
@@ -27,10 +31,17 @@ path_append (const char *parent, const char *child)
         return NULL;
     }
 
-    string_init (&path, strlen (parent) + sizeof (char) + strlen (child));
-    string_append (&path, parent);
-    string_append (&path, DIR_SEPERATOR);
-    string_append (&path, child);
+    rc |= string_init (&path, strlen (parent) + sizeof (char) + strlen (child));
+    rc |= string_append (&path, parent);
+    rc |= string_append (&path, DIR_SEPERATOR);
+    rc |= string_append (&path, child);
+
+    if (rc != 0)
+    {
+        LOG_E ("string operation failed");
+        free (path.m);
+        return NULL;
+    }
 
     return path.m;
 }
@@ -38,6 +49,7 @@ path_append (const char *parent, const char *child)
 char *
 expand_envvars (const char *src)
 {
+    int rc = 0;
     char *src_cpy = NULL;
     char *src_iter = NULL;
     char *env_value = NULL;
@@ -53,6 +65,11 @@ expand_envvars (const char *src)
 
     src_cpy = strdup (src);
     src_iter = src_cpy;
+    if (src_cpy == NULL)
+    {
+        LOG_E ("str_cpy failure");
+        return NULL;
+    }
 
     /* get prefix */
     src_iter = strchr (src_cpy, '%');
@@ -63,8 +80,8 @@ expand_envvars (const char *src)
     }
     substr_len = src_iter - src_cpy;
 
-    string_init (&dst, substr_len);
-    string_append_substring (&dst, src_cpy, substr_len);
+    rc |= string_init (&dst, substr_len);
+    rc |= string_append_substring (&dst, src_cpy, substr_len);
 
     /* find first environment variable */
     src_iter = strtok (src_cpy, "%");
@@ -72,14 +89,22 @@ expand_envvars (const char *src)
     {
         /* append expanded environment variable */
         env_value = getenv (src_iter);
-        string_append (&dst, env_value);
+        rc |= string_append (&dst, env_value);
 
         /* append trailing plain text */
         src_iter = strtok (NULL, "%\0");    /* end of string or env */
-        string_append (&dst, src_iter);
+        rc |= string_append (&dst, src_iter);
 
         /* find next environment variable */
         src_iter = strtok (NULL, "%");
+    }
+
+    if (rc != 0)
+    {
+        LOG_E ("string failure");
+        free (src_cpy);
+        free (dst.m);
+        return NULL;
     }
 
     free (src_cpy);
@@ -91,7 +116,8 @@ readfile (const char *filename)
 {
     FILE *fp = NULL;
     char *content = NULL;
-    int size = 0;
+    size_t size = 0;
+    size_t read_bytes = 0;
     int rc = 0;
 
     if (filename == NULL)
@@ -106,24 +132,33 @@ readfile (const char *filename)
         return NULL;
     }
 
-    fseek (fp, 0L, SEEK_END);
+    rc |= fseek (fp, 0L, SEEK_END);
     size = ftell (fp);
+    rc |= fseek (fp, 0L, SEEK_SET);
 
-    fseek (fp, 0L, SEEK_SET);
+    if (rc != 0)
+    {
+        LOG_E ("fseek failure");
+        (void)fclose (fp);
+        return NULL;
+    }
 
     content = malloc (size + 1);
     if (content == NULL)
     {
-        rc = errno;
-        fclose (fp);
-        errno = rc;
+        LOG_E ("content memory error");
+        (void)fclose (fp);
         return NULL;
     }
 
-    fread (content, sizeof (char), size, fp);
-    content[size] = '\0';
+    read_bytes = fread (content, sizeof (char), size, fp);
+    if (read_bytes != size)
+    {
+        LOG_W ("ftell vs fread size mismatch");
+    }
+    content[MIN (size, read_bytes)] = '\0';
 
-    fclose (fp);
+    (void)fclose (fp);
     return content;
 }
 
