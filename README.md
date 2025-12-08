@@ -10,6 +10,8 @@ Dependencies:
 - meson (build-time)
 - c99 compiler+linker (build-time)
 
+Instructions:
+
     meson setup build
     ninja -C build
 
@@ -20,6 +22,8 @@ Configure the `crontab` file, by default `%APPDATA%\wleafcron\crontab` on
 windows and `%HOME%/.config/wleafcron/crontab` on other platforms.
 
 crontab format:
+
+    # line comment
 
     #+------------------ minute 0-59
     #|  +--------------- hour 0-23
