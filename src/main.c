@@ -18,12 +18,7 @@
         }                                                               \
     } while (0)
 
-
-void
-atexit_cb (void)
-{
-    abort ();
-}
+int g_log_level = LOG_VERBOSE;
 
 int
 main (int argc, char **argv)
@@ -35,9 +30,7 @@ main (int argc, char **argv)
     char *crontab_path = expand_envvars (crontab_path_raw);
     int rc = 0;
 
-    atexit (atexit_cb);
-
-    LOG_I ("crontab - %s (%s)", crontab_path, crontab_path_raw);
+    LOG_V ("crontab - %s (%s)", crontab_path, crontab_path_raw);
 
     rc = crond (crontab_path);
 

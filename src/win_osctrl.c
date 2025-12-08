@@ -11,6 +11,8 @@
 #include <time.h>
 #include <windows.h>
 
+#define MAYBE_NULLSTR(s) ((s) == NULL ? "(null)" : (s))
+
 static int win_file_exists (const char *filepath);
 static char *win_generate_cmdline (int argc, char **argv);
 
@@ -127,15 +129,45 @@ win_generate_cmdline (int argc, char **argv)
 int
 win_os_execute (int argc, char **argv)
 {
+    int i = 0;
     char *program = NULL;
     char *cmdline = NULL; 
     PROCESS_INFORMATION process_info = { 0 };
     STARTUPINFOA info = { .cb = sizeof (info) };
 
-    return 0;
+    if ((argc <= 0) || (argv == NULL))
+    {
+        LOG_E ("invalid input argc/argv");
+        return (errno = EINVAL);
+    }
+
+    for (i = 0; i < argc; i++)
+    {
+        if (argv[i] == NULL)
+        {
+            LOG_E ("argv list element is NULL");
+            return (errno = EINVAL);
+        }
+    }
 
     program = win_find_program (argv[0]);
-    cmdline = win_generate_cmdline (argc-1, argv+1);
+    cmdline = win_generate_cmdline (argc, argv);
+
+    if ((program == NULL) || (cmdline == NULL))
+    {
+        LOG_D ("program == %p \"%s\"", program, MAYBE_NULLSTR (program));
+        LOG_D ("cmdline == %p \"%s\"", cmdline, MAYBE_NULLSTR (cmdline));
+        LOG_E ("unknown program - %s", argv[0]);
+        free (program);
+        free (cmdline);
+        return 1;
+    }
+
+    LOG_V ("starting %s", program);
+    for (i = 0; i < argc; i++)
+    {
+        LOG_V ("\targ #%d: %s", i, argv[i]);
+    }
 
     if (CreateProcessA (program, cmdline, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, 
                 NULL, NULL, &info, &process_info))
@@ -150,8 +182,6 @@ win_os_execute (int argc, char **argv)
     return 0;
 }
 
-static int i = 0;
-
 time_t
 win_os_fmtime (const char *filename)
 {
@@ -160,8 +190,6 @@ win_os_fmtime (const char *filename)
     SYSTEMTIME mtime_system = { 0 };
     struct tm  mtime_tm = { 0 };
     time_t     mtime = 0;
-
-    return i++;
 
     h_file = CreateFile (filename, GENERIC_READ, FILE_SHARE_READ, NULL, 
             OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);

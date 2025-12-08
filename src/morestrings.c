@@ -103,7 +103,7 @@ string_append (struct string *self, const char *child)
     child_len = strlen (child);
     new_count = self->count + child_len;
 
-    string_extend (self, new_count);
+    string_extend (self, new_count+1);
 
     (void)memmove (&self->m[self->count], child, child_len);
     self->count = new_count;

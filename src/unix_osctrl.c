@@ -113,7 +113,7 @@ unix_terminate_str_array (int n, char **src)
             return NULL;
         }
     }
-    dst[i+1] = NULL;
+    dst[i] = NULL;
 
     return dst;
 }
@@ -121,6 +121,7 @@ unix_terminate_str_array (int n, char **src)
 int 
 unix_os_execute (int argc, char **argv)
 {
+    int i = 0;
     char *prog_path = NULL; 
     char **new_argv = NULL; 
     int child_pid = 0;
@@ -138,12 +139,18 @@ unix_os_execute (int argc, char **argv)
         prog_path = unix_find_program (argv[0]);
         if (prog_path == NULL)
         {
-            LOG_F ("cannot find %s", argv[0]);
-            exit (0);
+            LOG_E ("cannot find %s", argv[0]);
+            exit (EXIT_FAILURE);
+        }
+
+        LOG_V ("starting %s", prog_path);
+        for (i = 0; i < argc; i++)
+        {
+            LOG_V ("\targ #%d: %s", i, new_argv[i]);
         }
 
         execve (prog_path, new_argv, NULL);
-        exit (0);
+        exit (EXIT_SUCCESS);
     }
     else if (child_pid > 0)
     {

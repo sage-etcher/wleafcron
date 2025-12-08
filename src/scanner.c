@@ -118,7 +118,7 @@ scan_string (scanner_t *self)
     self->string.count = 0;
     for (; !isspace (self->ch) && !feof (self->fp); i++, readch (self))
     {
-        rc = string_extend (&self->string, i);
+        rc = string_extend (&self->string, i+1);
         if (rc)
         {
             LOG_E ("failed to extend string, cannot add next character");
@@ -193,7 +193,7 @@ scan_quoted_string (scanner_t *self)
             return SYMBOLS1 (SYM_UNKNOWN);
         }
 
-        rc = string_extend (&self->string, i);
+        rc = string_extend (&self->string, i+1);
         if (rc)
         {
             LOG_E ("failed to extend string, cannot add next character");
@@ -227,7 +227,7 @@ scan_comment (scanner_t *self)
     self->string.count = 0;
     for (; self->ch != '\n' && !feof (self->fp); i++, readch (self))
     {
-        rc = string_extend (&self->string, i);
+        rc = string_extend (&self->string, i+1);
         if (rc)
         {
             LOG_E ("failed to extend string, cannot add next character");

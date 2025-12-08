@@ -43,7 +43,7 @@ crond (const char *crontab)
         oh = os_fmtime (crontab);
         if (oh != last_modified)
         {
-            LOG_I ("crontab updated, reloading - %s", crontab);
+            LOG_V ("crontab updated, reloading - %s", crontab);
 
             rules_destroy (&rules);
 
