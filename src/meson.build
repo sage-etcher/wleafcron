@@ -8,6 +8,7 @@ add_project_arguments('-ggdb', language : 'c')
 wleafcron_srcs = files([
   'commonos.c',
   'crond.c',
+  'custom_getopt.c',
   'imath.c',
   'main.c',
   'morestrings.c',
