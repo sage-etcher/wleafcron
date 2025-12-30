@@ -29,6 +29,7 @@ wleafcron = executable(
   'wleafcron',
   wleafcron_srcs,
   win_subsystem : 'console',
+  install : true,
 )
 
 # end of file
